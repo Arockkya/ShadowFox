@@ -8,199 +8,194 @@ public class Main {
     public static void main(String[] args) {
 
         Scanner sc = new Scanner(System.in);
-
         ArrayList<Contact> contacts = new ArrayList<>();
 
-        int choice = 0;
+        int choice;
 
         do {
 
             System.out.println("\n===== CONTACT MANAGEMENT SYSTEM =====");
-
             System.out.println("1. Add Contact");
             System.out.println("2. View Contacts");
             System.out.println("3. Update Contact");
             System.out.println("4. Delete Contact");
-            System.out.println("5. Exit");
+            System.out.println("5. Search Contact");
+            System.out.println("6. Exit");
 
             System.out.print("Enter your choice: ");
-
             choice = sc.nextInt();
             sc.nextLine();
 
             switch (choice) {
 
-                case 1:
+                // ================= ADD =================
+                case 1 -> {
 
                     System.out.print("Enter Name: ");
-                    String name = sc.nextLine();
-
-                    if (name.isEmpty()) {
-
-                        System.out.println("Name cannot be empty!");
-                        break;
-
-                    }
+                    String name = sc.nextLine().trim();
 
                     if (!name.matches("[a-zA-Z ]+")) {
-
-                        System.out.println("Name should contain letters only!");
+                        System.out.println("Invalid name!");
                         break;
-
                     }
 
                     System.out.print("Enter Phone Number: ");
-                    String phone = sc.nextLine();
-
-                    if (phone.isEmpty()) {
-
-                        System.out.println("Phone number cannot be empty!");
-                        break;
-
-                    }
+                    String phone = sc.nextLine().trim();
 
                     if (!phone.matches("\\d{10}")) {
-
-                        System.out.println("Phone number must contain exactly 10 digits!");
+                        System.out.println("Phone must be 10 digits!");
                         break;
-
                     }
 
-                    boolean exists = false;
-
-                    for (Contact c : contacts) {
-
-                        if (c.getPhoneNumber().equals(phone)) {
-
-                            exists = true;
-                            break;
-
-                        }
-                    }
+                    boolean exists = contacts.stream()
+                            .anyMatch(c -> c.getPhoneNumber().equals(phone));
 
                     if (exists) {
-
-                        System.out.println("Phone number already exists!");
+                        System.out.println("Phone already exists!");
                         break;
-
                     }
 
-                    Contact contact = new Contact(name, phone);
-
-                    contacts.add(contact);
-
+                    contacts.add(new Contact(name, phone));
                     System.out.println("Contact Added Successfully!");
-                    break;
+                }
 
-                case 2:
+                // ================= VIEW =================
+                case 2 -> {
 
                     if (contacts.isEmpty()) {
-
-                        System.out.println("No Contacts Found!");
-
+                        System.out.println("No contacts found!");
                     } else {
-
-                        System.out.println("\n--- Contact List ---");
-
+                        System.out.println("\n--- CONTACT LIST ---");
                         for (int i = 0; i < contacts.size(); i++) {
-
                             System.out.println((i + 1) + ". " + contacts.get(i));
+                        }
+                    }
+                }
 
+                // ================= UPDATE =================
+                case 3 -> {
+
+                    System.out.print("Enter Contact Number to Update: ");
+                    int index = sc.nextInt() - 1;
+                    sc.nextLine();
+
+                    if (index < 0 || index >= contacts.size()) {
+                        System.out.println("Invalid contact number!");
+                        break;
+                    }
+
+                    System.out.print("Enter New Name: ");
+                    String newName = sc.nextLine().trim();
+
+                    if (!newName.matches("[a-zA-Z ]+")) {
+                        System.out.println("Invalid name!");
+                        break;
+                    }
+
+                    System.out.print("Enter New Phone Number: ");
+                    String newPhone = sc.nextLine().trim();
+
+                    if (!newPhone.matches("\\d{10}")) {
+                        System.out.println("Phone must be 10 digits!");
+                        break;
+                    }
+
+                    boolean duplicate = false;
+
+                    for (int i = 0; i < contacts.size(); i++) {
+                        if (i != index &&
+                                contacts.get(i).getPhoneNumber().equals(newPhone)) {
+                            duplicate = true;
+                            break;
                         }
                     }
 
-                    break;
+                    if (duplicate) {
+                        System.out.println("Phone already exists!");
+                        break;
+                    }
 
-                case 3:
+                    contacts.get(index).setName(newName);
+                    contacts.get(index).setPhoneNumber(newPhone);
 
-                    System.out.print("Enter Contact Number to Update: ");
-                    int updateIndex = sc.nextInt() - 1;
+                    System.out.println("Contact Updated!");
+                }
+
+                // ================= DELETE =================
+                case 4 -> {
+
+                    System.out.print("Enter Contact Number to Delete: ");
+                    int index = sc.nextInt() - 1;
+
+                    if (index >= 0 && index < contacts.size()) {
+                        contacts.remove(index);
+                        System.out.println("Deleted Successfully!");
+                    } else {
+                        System.out.println("Invalid index!");
+                    }
+                }
+
+                // ================= SEARCH (NEW FEATURE) =================
+                case 5 -> {
+
+                    System.out.println("Search by:");
+                    System.out.println("1. Name");
+                    System.out.println("2. Phone");
+                    System.out.print("Choice: ");
+
+                    int type = sc.nextInt();
                     sc.nextLine();
 
-                    if (updateIndex >= 0 && updateIndex < contacts.size()) {
+                    if (type == 1) {
 
-                        System.out.print("Enter New Name: ");
-                        String newName = sc.nextLine();
+                        System.out.print("Enter Name: ");
+                        String searchName = sc.nextLine().toLowerCase();
 
-                        if (!newName.matches("[a-zA-Z ]+")) {
+                        boolean found = false;
 
-                            System.out.println("Name should contain letters only!");
-                            break;
-
-                        }
-
-                        System.out.print("Enter New Phone Number: ");
-                        String newPhone = sc.nextLine();
-
-                        if (!newPhone.matches("\\d{10}")) {
-
-                            System.out.println("Phone number must contain exactly 10 digits!");
-                            break;
-
-                        }
-
-                        boolean duplicate = false;
-
-                        for (int i = 0; i < contacts.size(); i++) {
-
-                            if (i != updateIndex &&
-                                    contacts.get(i).getPhoneNumber().equals(newPhone)) {
-
-                                duplicate = true;
-                                break;
-
+                        for (Contact c : contacts) {
+                            if (c.getName().toLowerCase().contains(searchName)) {
+                                System.out.println(c);
+                                found = true;
                             }
                         }
 
-                        if (duplicate) {
-
-                            System.out.println("Phone number already exists!");
-                            break;
-
+                        if (!found) {
+                            System.out.println("No contact found!");
                         }
 
-                        contacts.get(updateIndex).setName(newName);
-                        contacts.get(updateIndex).setPhoneNumber(newPhone);
+                    } else if (type == 2) {
 
-                        System.out.println("Contact Updated Successfully!");
+                        System.out.print("Enter Phone: ");
+                        String searchPhone = sc.nextLine();
 
-                    } else {
+                        boolean found = false;
 
-                        System.out.println("Invalid Contact Number!");
-                    }
+                        for (Contact c : contacts) {
+                            if (c.getPhoneNumber().equals(searchPhone)) {
+                                System.out.println(c);
+                                found = true;
+                                break;
+                            }
+                        }
 
-                    break;
-
-                case 4:
-
-                    System.out.print("Enter Contact Number to Delete: ");
-                    int deleteIndex = sc.nextInt() - 1;
-
-                    if (deleteIndex >= 0 && deleteIndex < contacts.size()) {
-
-                        contacts.remove(deleteIndex);
-
-                        System.out.println("Contact Deleted Successfully!");
+                        if (!found) {
+                            System.out.println("No contact found!");
+                        }
 
                     } else {
-
-                        System.out.println("Invalid Contact Number!");
+                        System.out.println("Invalid choice!");
                     }
+                }
 
-                    break;
+                // ================= EXIT =================
+                case 6 -> System.out.println("Application Closed!");
 
-                case 5:
-
-                    System.out.println("Application Closed");
-                    break;
-
-                default:
-
-                    System.out.println("Invalid Choice!");
+                default -> System.out.println("Invalid choice!");
 
             }
 
-        } while (choice != 5);
+        } while (choice != 6);
 
         sc.close();
     }
